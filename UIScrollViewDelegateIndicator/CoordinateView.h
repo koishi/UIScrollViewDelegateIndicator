@@ -10,5 +10,6 @@
 
 @interface CoordinateView : UIView<UIScrollViewDelegate>
 @property (weak, nonatomic) IBOutlet UITextView *textView;
-
+@property (weak, nonatomic) UITableView *tableView;
+@property (weak, nonatomic) UIViewController *parentVC;
 @end

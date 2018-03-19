@@ -18,6 +18,9 @@
     __weak IBOutlet CallBackIndicator *willBeginDeceleratingView;
     __weak IBOutlet CallBackIndicator *didEndDeceleratingView;
 }
+
+@property NSMutableArray *nowDisplay;
+
 @end
 
 @implementation CoordinateView
@@ -26,7 +29,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        // Initialization code
+        [self setup];
     }
     return self;
 }
@@ -36,24 +39,26 @@
     if (self) {
         [didScrollView showIndicator];
         [didScrollToTopView showIndicator];
+        [self setup];
     }
     return self;
 }
 
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect
-{
-    // Drawing code
+- (void)setup {
+    self.nowDisplay = [NSMutableArray array];
 }
-*/
+
 
 
 #pragma mark - UIScrollViewDelegate
 
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 500;
+}
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    NSLog(@"scrollViewDidScroll. : contentOffset :{%f, %f}", scrollView.contentOffset.x, scrollView.contentOffset.y);
+//    NSLog(@"scrollViewDidScroll. : contentOffset :{%f, %f}", scrollView.contentOffset.x, scrollView.contentOffset.y);
 
     NSString *logText = [NSString stringWithFormat:@"scrollViewDidScroll :%@", scrollView];
     self.textView.text = logText;
@@ -67,13 +72,13 @@
 }
 
 - (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView {
-    NSLog(@"scrollViewShouldScrollToTop. : contentOffset:{%f, %f}", scrollView.contentOffset.x, scrollView.contentOffset.y);
+//    NSLog(@"scrollViewShouldScrollToTop. : contentOffset:{%f, %f}", scrollView.contentOffset.x, scrollView.contentOffset.y);
     [shouldScrollToTopView highlight];
     return YES;
 }
 
 - (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView {
-    NSLog(@"scrollViewDidScrollToTop. : %@", scrollView);
+//    NSLog(@"scrollViewDidScrollToTop. : %@", scrollView);
     NSString *logText = [NSString stringWithFormat:@"scrollViewDidScrollToTop. : %@", scrollView];
     self.textView.text = logText;
     
@@ -81,7 +86,7 @@
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
-    NSLog(@"scrollViewWillBeginDragging. : %@", scrollView);
+//    NSLog(@"scrollViewWillBeginDragging. : %@", scrollView);
     NSString *logText = [NSString stringWithFormat:@"scrollViewWillBeginDragging. : %@", scrollView];
     self.textView.text = logText;
     
@@ -89,7 +94,7 @@
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
-    NSLog(@"scrollViewDidEndDragging. : %@, %d", scrollView, decelerate);
+//    NSLog(@"scrollViewDidEndDragging. : %@, %d", scrollView, decelerate);
     NSString *logText = [NSString stringWithFormat:@"scrollViewDidEndDragging. : %@", scrollView];
     self.textView.text = logText;
 
@@ -97,7 +102,7 @@
 }
 
 - (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView {
-    NSLog(@"scrollViewWillBeginDecelerating. : %@", scrollView);
+//    NSLog(@"scrollViewWillBeginDecelerating. : %@", scrollView);
     NSString *logText = [NSString stringWithFormat:@"scrollViewWillBeginDecelerating. : %@", scrollView];
     self.textView.text = logText;
     
@@ -105,11 +110,41 @@
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
-    NSLog(@"scrollViewDidEndDecelerating. : %@", scrollView);
+//    NSLog(@"scrollViewDidEndDecelerating. : %@", scrollView);
     NSString *logText = [NSString stringWithFormat:@"scrollViewDidEndDecelerating. : %@", scrollView];
     self.textView.text = logText;
     
     [didEndDeceleratingView highlight];
+
+    [self playCell: self.tableView];
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(nonnull UITableViewCell *)cell forRowAtIndexPath:(nonnull NSIndexPath *)indexPath
+{
+    NSString *indexPathRow = [NSString stringWithFormat:@"%ld", (long)indexPath.row];
+    if (![self.nowDisplay containsObject: indexPathRow]) {
+        [self.nowDisplay addObject: indexPathRow];
+    }
+    NSLog(@"表示された %@", self.nowDisplay);
+}
+
+- (void)tableView:(UITableView *)tableView didEndDisplayingCell:(nonnull UITableViewCell *)cell forRowAtIndexPath:(nonnull NSIndexPath *)indexPath
+{
+    NSString *indexPathRow = [NSString stringWithFormat:@"%ld", (long)indexPath.row];
+    if ([self.nowDisplay containsObject: indexPathRow]) {
+        [self.nowDisplay removeObject: indexPathRow];
+    }
+    NSLog(@"非表示になった %@", self.nowDisplay);
+}
+
+- (void)playCell:(UITableView *)tableView
+{
+    for (NSString *indexString in self.nowDisplay) {
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:[indexString integerValue] inSection:0];
+        CGRect cellRect = [tableView rectForRowAtIndexPath:indexPath];
+        CGRect cellRectInView = [tableView convertRect:cellRect toView:self.parentVC.navigationController.view];
+        NSLog(@"%ld セルの位置 %@", (long)indexPath.row, NSStringFromCGRect(cellRectInView));
+    }
 }
 
 @end

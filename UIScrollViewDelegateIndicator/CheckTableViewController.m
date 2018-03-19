@@ -9,7 +9,7 @@
 #import "CheckTableViewController.h"
 #import "CoordinateView.h"
 
-static const NSInteger MAX_NUMBER_OF_ARRAY = 50;
+static const NSInteger MAX_NUMBER_OF_ARRAY = 30;
 
 @interface CheckTableViewController ()
 @property (strong, nonatomic) NSArray *numbersArray;
@@ -54,6 +54,8 @@ static const NSInteger MAX_NUMBER_OF_ARRAY = 50;
     //disable scrolls to top.
     coordinateView.textView.scrollsToTop = NO;
 
+    coordinateView.tableView = self.tableView;
+    coordinateView.parentVC = self;
     [self.tableView addSubview:coordinateView];
     
     //scrollview delegate
